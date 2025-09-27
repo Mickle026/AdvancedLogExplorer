@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>AdvancedLogExplorer</AssemblyName>
+    <RootNamespace>AdvancedLogExplorer</RootNamespace>
+    <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="advancedlogexplorer %282%29.zip" />
+    <None Remove="AdvancedLogExplorer-1422-26092025.zip" />
+    <None Remove="AdvancedLogExplorer-1847-27092025.zip" />
+    <None Remove="advancedlogexplorer.zip" />
+    <None Remove="advancedlogexplorer1555-26092025.zip" />
+    <None Remove="advancedlogexplorer1742-29092025.zip" />
+    <None Remove="advancedlogexplorer1800-26092025.zip" />
+    <None Remove="AdvancedLogExplorer2007-27092025.zip" />
+    <None Remove="logo.png" />
+    <None Remove="Web\advancedlogexplorer.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Embedded Web UI resources -->
+    <EmbeddedResource Include="logo.png" />
+    <EmbeddedResource Include="Web\advancedlogexplorer.html" LogicalName="AdvancedLogExplorer.Web.advancedlogexplorer.html" />
+    <EmbeddedResource Include="Web\advancedlogexplorer.js" LogicalName="AdvancedLogExplorer.Web.advancedlogexplorer.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediaBrowser.Server.Core" Version="4.8.11" />
+  </ItemGroup>
+
+</Project>
+

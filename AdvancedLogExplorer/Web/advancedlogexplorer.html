@@ -1,0 +1,232 @@
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<div id="AdvancedLogExplorer" data-role="page"
+     class="page type-interior pluginConfigurationPage page-windowScroll"
+     data-require="emby-button,emby-select,emby-input,emby-toggle"
+     data-controller="__plugin/advancedlogexplorerjs">
+    <style>
+        .activeMatchLine {
+            background-color: rgba(255, 255, 0, 0.15);
+        }
+        pre#logOutput,
+        pre#rawLogOutput {
+            width: 98%;
+            height: 500px;
+            overflow: auto;
+            padding: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.2;
+            white-space: pre; /* or pre-wrap if you want wrapping */
+            background: #111;
+            color: #eee;
+        }
+
+        #rawLogOutput {
+            background: #222; /* darker raw log */
+            color: #ccc;
+        }
+            #logOutput::-webkit-scrollbar,
+            #rawLogOutput::-webkit-scrollbar {
+                width: 10px;
+                height: 10px;
+            }
+        /* Collapsible Raw container (no jQuery slim effects) */
+        #rawLogContainer {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height .25s ease;
+        }
+
+        #rawLogContainer.open {
+            max-height: 800px;
+        }
+
+        /* Simple modal */
+        .dlg-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .dlg-content {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 1em 1.5em;
+            border-radius: 6px;
+            min-width: 280px;
+            max-width: 420px;
+        }
+    
+.emby-input, .emby-select {
+    height: 30px;
+    padding: 0 0.5em;
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+</style>
+    <div data-role="content" style="padding:0.5em;">
+        <h2 style="margin-bottom:0.5em;">Advanced Log Explorer</h2>
+
+        <!-- First row -->
+        <div style="display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-bottom:0.5em;">
+            <label>Log:</label>
+            <select id="logFileSelect" is="emby-select" class="emby-select" style="width:160px;"></select>
+
+            <label>Keyword1:</label>
+            <input id="keyword1" is="emby-input" type="text" class="emby-input" style="width:120px;" />
+
+            <label>Operator:</label>
+            <select id="operator" is="emby-select" class="emby-select" style="width:80px;">
+                <option value="NONE">NONE</option>
+                <option value="AND">AND</option>
+                <option value="OR">OR</option>
+                <option value="NOT">NOT</option>
+            </select>
+
+            <label>Keyword2:</label>
+            <input id="keyword2" is="emby-input" type="text" class="emby-input" style="width:120px;" />
+
+            <label>Plugins:</label>
+            <select id="preset" is="emby-select" class="emby-select" style="width:120px;">
+                <option value="">None</option>
+                <option value="exception">Exceptions</option>
+                <option value="playback">Playback</option>
+                <option value="transcode">Transcode</option>
+                <option value="network">Network</option>
+                <option value="library">Library</option>
+            </select>
+
+            <label>Plugin:</label>
+            <select id="pluginFilter" is="emby-select" class="emby-select" style="width:140px;"></select>
+
+            <label>Lines:</label>
+            <select id="lineLimit" is="emby-select" class="emby-select" style="width:90px;">
+                <option value="200">200</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="5000">5000</option>
+                <option value="0">Full</option>
+            </select>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;flex-wrap:wrap;gap:0.75em;align-items:center;margin-bottom:0.5em;">
+            <button id="applyFilter" is="emby-button" class="raised button-submit">Apply</button>
+            <button id="refreshBtn" is="emby-button" class="raised">Refresh</button>
+            <button id="settingsBtn" is="emby-button" class="raised">⚙ Settings</button>
+            <button id="searchBtn" is="emby-button" class="raised">🔍 Search</button>
+        </div>
+
+        <!-- Logs -->
+        <h3 style="margin-top:0.5em;display:flex;align-items:center;">
+            Filtered Log
+            <span style="flex:1"></span>
+            <button id="quickSettings" is="emby-button" class="raised" title="Settings">⚙</button>
+        </h3>
+        <pre id="logOutput"
+             style="width:98%;margin-top:0.5em;height:500px;overflow:scroll;
+                background:#111;color:#eee;padding:6px;font-family:monospace;
+                white-space:pre-wrap;line-height:1.2;"></pre>
+
+        <div id="rawLogContainer" class="collapsible">
+            <h3 style="margin-top:0.5em;">Raw Log</h3>
+            <pre id="rawLogOutput"
+                 style="width: 98%; margin-top: 0.5em; height: 500px; overflow: scroll;
+                    background: #222; color: #ccc; padding: 6px; font-family: monospace;
+                    white-space: pre-wrap; line-height: 1.2;"></pre>
+        </div>
+
+        <!-- Settings Modal (INSIDE the page root so components get upgraded) -->
+        <div id="settingsModal" class="dlg-backdrop" style="display:none;">
+            <div class="dlg-content">
+                <h3>Advanced Settings</h3>
+
+                <label class="emby-toggle-label">
+                    <input type="checkbox" id="autoRefreshToggle" is="emby-toggle" />
+                    <span>Auto-refresh</span>
+                </label>
+
+                <div style="margin:0.5em 0;">
+                    <label>Interval:</label>
+                    <select id="autoRefreshInterval" is="emby-select" class="emby-select" style="width:100px;">
+                        <option value="2000">2s</option>
+                        <option value="5000" selected>5s</option>
+                        <option value="10000">10s</option>
+                        <option value="30000">30s</option>
+                    </select>
+                </div>
+
+                <label class="emby-toggle-label">
+                    <input type="checkbox" id="autoScrollToggle" is="emby-toggle" checked />
+                    <span>Scroll</span>
+                </label>
+
+                <label class="emby-toggle-label">
+                    <input type="checkbox" id="rotationToggle" is="emby-toggle" />
+                    <span>Rotation</span>
+                </label>
+
+                <label class="emby-toggle-label">
+                    <input type="checkbox" id="splitViewToggle" is="emby-toggle" />
+                    <span>Split View</span>
+                </label>
+
+                <div style="margin-top:1em;text-align:right;">
+                    <button id="closeSettings" is="emby-button" class="raised button-cancel">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- Search Modal -->
+        <div id="searchModal" class="dlg-backdrop" style="display:none;">
+            <div class="dlg-content">
+                <h3>Search Logs</h3>
+
+                <div style="display:flex;gap:0.5em;align-items:center;flex-wrap:wrap;">
+                    <input id="liveSearch" type="text" is="emby-input" class="emby-input" style="flex:1;" placeholder="Keyword or regex..." />
+                    <button id="clearSearchBtn" is="emby-button" class="raised">✖</button>
+                    <button id="prevMatchBtn" is="emby-button" class="raised">◀</button>
+                    <button id="nextMatchBtn" is="emby-button" class="raised">▶</button>
+                </div>
+
+                <label class="emby-toggle-label">
+                    <input id="caseSensitiveToggle" type="checkbox" is="emby-toggle" />
+                    <span>Case sensitive</span>
+                </label>
+
+                <label class="emby-toggle-label">
+                    <input id="regexToggle" type="checkbox" is="emby-toggle" />
+                    <span>Regex</span>
+                </label>
+
+                <div id="searchCount" style="margin:0.5em 0;color:#aaa;"></div>
+
+                <div style="margin-top:1em;text-align:right;">
+                    <button id="closeSearch" is="emby-button" class="raised button-cancel">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- Export Tools -->
+        <div style="display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.5em;align-items:center;">
+            Filtered Log Tools:
+            <button is="emby-button" type="button" class="raised" id="copyBtn">Copy</button>
+            <button is="emby-button" type="button" class="raised" id="downloadBtn">Download</button>
+            Raw Log Tools:
+            <button is="emby-button" type="button" class="raised" id="copyRawBtn">Copy</button>
+            <button is="emby-button" type="button" class="raised" id="downloadRawBtn">Download</button>
+        </div>
+    </div>
+</div>
+
+
