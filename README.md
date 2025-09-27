@@ -21,7 +21,6 @@ It makes it easy to browse, search, and export logs without leaving the web inte
   *(Note: this dropdown will be empty if no plugins are listed in that log.)*
 - 📑 **Split view** — view both the filtered log and the raw log side by side.
 - 📋 **Copy / Download** — copy filtered or raw logs to the clipboard, or download them as `.txt` files.
-- 💾 **Export session** — save filtered + raw logs with metadata into a `.zip` archive for later analysis.
 
 ---
 
