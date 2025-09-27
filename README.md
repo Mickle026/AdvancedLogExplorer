@@ -49,7 +49,6 @@ It makes it easy to browse, search, and export logs without leaving the web inte
    - **Copy Raw** — copies the raw log to clipboard.
    - **Download Filtered** — saves the filtered log as a text file.
    - **Download Raw** — saves the raw log as a text file.
-   - **Export Session** — saves filtered log, raw log, and metadata in a `.zip`.
 
 ---
 
