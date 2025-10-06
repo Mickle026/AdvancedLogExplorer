@@ -63,6 +63,10 @@ If no such entries exist in the selected log file, the dropdown will be empty.
 
 ---
 
+## 🧑‍💻 Developers
+**Author:** Mike Williams  
+---
+
 ## License
 
 MIT License.  
